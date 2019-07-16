@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
+	"ipprovider/pkg/http"
+	"log"
 	"net"
 )
 
@@ -15,6 +17,8 @@ var RootCmd = &cobra.Command{
 		fmt.Println("hello ip")
 		_interface, _ := getFirstBoardcastInterface()
 		fmt.Println("interface: ", _interface.Name)
+		log.Fatal(http.NewHttpServer(":8088").StartHttpServer())
+
 	},
 }
 

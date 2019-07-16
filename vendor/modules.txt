@@ -1,6 +1,16 @@
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/mdlayher/arp v0.0.0-20190313224443-98a83c8a2717
+github.com/mdlayher/arp
+# github.com/mdlayher/ethernet v0.0.0-20190313224307-5b5fc417d966
+github.com/mdlayher/ethernet
+# github.com/mdlayher/raw v0.0.0-20190313224157-43dbcdd7739d
+github.com/mdlayher/raw
 # github.com/spf13/cobra v0.0.5
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
+# golang.org/x/net v0.0.0-20190313220215-9f648a60d977
+golang.org/x/net/bpf
+# golang.org/x/sys v0.0.0-20190312061237-fead79001313
+golang.org/x/sys/unix

@@ -2,6 +2,8 @@ package arp
 
 import (
 	"github.com/mdlayher/arp"
+	"ipprovider/pkg/common"
+	"log"
 	"net"
 )
 
@@ -22,8 +24,10 @@ func (speaker *Speaker) recvPacket (ch chan *arp.Packet, errCh chan error) {
 }
 
 func (speaker *Speaker)ListenAndServe() error {
+	log.Println("arp speaker starting...")
 	packetCh := make(chan *arp.Packet)
 	errCh := make(chan error)
+	log.Println("arp speaker started")
 	go speaker.recvPacket(packetCh, errCh)
 	for {
 		select {
@@ -31,12 +35,32 @@ func (speaker *Speaker)ListenAndServe() error {
 			go speaker.packetHandler(packet)
 			break
 		case err := <- errCh:
+			log.Fatal("speaker down!")
 			return err
 		}
 	}
 }
 
 func (speaker *Speaker) packetHandler(packet *arp.Packet) {
+
+	if packet.Operation == arp.OperationReply {
+		return
+	}
+
+	ip := packet.TargetIP.To4()
+	if ip == nil {
+		return
+	}
+
+	_, exist := common.AssignedIPv4[common.InetToN(ip)]
+	if !exist {
+		return
+	}
+
+	err := speaker.arpClient.Reply(packet, speaker._interface.HardwareAddr, ip)
+	if err != nil {
+		log.Print(err)
+	}
 
 }
 

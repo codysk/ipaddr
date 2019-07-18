@@ -6,6 +6,7 @@ import (
 	"ipprovider/pkg/arp"
 	"ipprovider/pkg/common"
 	"ipprovider/pkg/http"
+	"ipprovider/pkg/addressmanager"
 	"log"
 	"net"
 )
@@ -28,7 +29,8 @@ var RootCmd = &cobra.Command{
 		}
 		go speaker.ListenAndServe()
 
-		log.Fatal(http.NewHttpServer(":8088").StartHttpServer())
+		manager := addressmanager.NewManager(speaker)
+		log.Fatal(http.NewHttpServer(":8088", manager).StartHttpServer())
 
 	},
 }

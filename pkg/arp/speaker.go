@@ -90,16 +90,15 @@ func (speaker *Speaker) AssignIP(ip net.IP) error {
 	freeRecv := make(chan *arp.Packet)
 
 	speaker.gratuitousArpRespChs[common.InetToN(ip)] = freeRecv
+	defer delete(speaker.gratuitousArpRespChs, common.InetToN(ip))
 	go speaker.sendGratuitousARP(ip)
 
 	select {
 	case <- freeRecv:
-		delete(speaker.gratuitousArpRespChs, common.InetToN(ip))
 		return errors.New("assign failed. ")
 	case <- time.After(5*time.Second):
 	}
 
-	delete(speaker.gratuitousArpRespChs, common.InetToN(ip))
 	return nil
 }
 

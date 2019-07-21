@@ -60,6 +60,7 @@ func (*Server) notFound(writer http.ResponseWriter, r *http.Request)  {
 }
 
 func (server *Server) StartHttpServer() error {
+	log.Println("http server started")
 	return  http.ListenAndServe(server.port, server)
 }
 

@@ -3,12 +3,16 @@ package cmd
 import (
 	"errors"
 	"github.com/spf13/cobra"
+	"ipprovider/pkg/addressmanager"
 	"ipprovider/pkg/arp"
 	"ipprovider/pkg/common"
+	"ipprovider/pkg/container"
 	"ipprovider/pkg/http"
-	"ipprovider/pkg/addressmanager"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 var RootCmd = &cobra.Command{
@@ -17,6 +21,7 @@ var RootCmd = &cobra.Command{
 	Long: "ipProvider",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("hello ip")
+		sigCh := make(chan os.Signal)
 		_interface, _ := getFirstBoardcastInterface()
 		log.Println("interface: ", _interface.Name)
 
@@ -27,11 +32,33 @@ var RootCmd = &cobra.Command{
 			log.Print("get arp speaker failed.")
 			log.Fatal(err)
 		}
-		go speaker.ListenAndServe()
+
+		dockerClient := container.NewDockerClient("/var/run/docker.sock")
+		err = dockerClient.InitProviderNetwork()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		go func() {
+			speaker.ListenAndServe()
+			log.Println("speaker exited")
+			sigCh <- syscall.SIGTERM
+		}()
 
 		manager := addressmanager.NewManager(speaker)
-		log.Fatal(http.NewHttpServer(":8088", manager).StartHttpServer())
+		go func() {
+			log.Print(http.NewHttpServer(":8088", manager).StartHttpServer())
+			log.Println("http server exited")
+			sigCh <- syscall.SIGTERM
+		}()
 
+
+		log.Println("listening system signal")
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+		log.Printf("signal: %v",<-sigCh)
+
+		// PreStop Action
+		_ = dockerClient.RemoveProviderNetwork()
 	},
 }
 

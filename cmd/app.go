@@ -47,7 +47,7 @@ var RootCmd = &cobra.Command{
 
 		manager := addressmanager.NewManager(speaker)
 		go func() {
-			log.Print(http.NewHttpServer(":8088", manager).StartHttpServer())
+			log.Print(http.NewHttpServer(":8088", manager, dockerClient).StartHttpServer())
 			log.Println("http server exited")
 			sigCh <- syscall.SIGTERM
 		}()

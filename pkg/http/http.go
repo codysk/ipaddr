@@ -1,8 +1,11 @@
 package http
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"ipprovider/pkg/addressmanager"
+	"ipprovider/pkg/container"
 	"log"
 	"net"
 	"net/http"
@@ -11,6 +14,7 @@ import (
 type Server struct {
 	port string
 	manager *addressmanager.Manager
+	dockerClient *container.DockerClient
 }
 
 func (server *Server) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
@@ -27,8 +31,17 @@ func (server *Server) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (*Server) api_getContainers(writer http.ResponseWriter, _ *http.Request) {
-	_, _ = writer.Write([]byte("hello containers"))
+func (server *Server) api_getContainers(writer http.ResponseWriter, _ *http.Request) {
+	containerList, _ := server.dockerClient.GetContainerList()
+
+	bodyBuf := new(bytes.Buffer)
+	err := json.NewEncoder(bodyBuf).Encode(containerList)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	_, _ = writer.Write(bodyBuf.Bytes())
 }
 
 func (server *Server) api_assignIPForContainer(writer http.ResponseWriter, r *http.Request) {
@@ -64,9 +77,10 @@ func (server *Server) StartHttpServer() error {
 	return  http.ListenAndServe(server.port, server)
 }
 
-func NewHttpServer(port string, manager *addressmanager.Manager) *Server {
+func NewHttpServer(port string, manager *addressmanager.Manager, dockerClient *container.DockerClient) *Server {
 	return &Server{
 		port: port,
 		manager: manager,
+		dockerClient: dockerClient,
 	}
 }

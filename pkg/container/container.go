@@ -166,6 +166,38 @@ func (client *DockerClient) RemoveProviderNetwork() error {
 	return nil
 }
 
+func (client *DockerClient) ConnectProviderNetwork(containId string) error {
+
+	reqBodyBuf := new(bytes.Buffer)
+
+	err := json.NewEncoder(reqBodyBuf).Encode(
+		map[string]string{
+			"Container": containId,
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.httpClient.Post(
+		client.getApiUrl("/networks/" + common.IPProviderNetworkName + "/connect"),
+		"application/json",
+		reqBodyBuf,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return errors.New(fmt.Sprintf("connect network request return code: %d", resp.StatusCode))
+	}
+
+	return nil
+
+}
+
 func (client *DockerClient) DisconnectProviderNetwork(containerId string) error {
 	type DisconnectReq struct {
 		Container string

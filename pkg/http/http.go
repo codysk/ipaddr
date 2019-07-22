@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"ipprovider/pkg/addressmanager"
-	"ipprovider/pkg/container"
 	"log"
 	"net"
 	"net/http"
@@ -14,7 +13,6 @@ import (
 type Server struct {
 	port string
 	manager *addressmanager.Manager
-	dockerClient *container.DockerClient
 }
 
 func (server *Server) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
@@ -32,7 +30,7 @@ func (server *Server) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
 }
 
 func (server *Server) api_getContainers(writer http.ResponseWriter, _ *http.Request) {
-	containerList, _ := server.dockerClient.GetContainerList()
+	containerList, _ := server.manager.GetContainers()
 
 	bodyBuf := new(bytes.Buffer)
 	err := json.NewEncoder(bodyBuf).Encode(containerList)
@@ -41,6 +39,7 @@ func (server *Server) api_getContainers(writer http.ResponseWriter, _ *http.Requ
 		return
 	}
 
+	writer.Header().Set("content-type", "application/json")
 	_, _ = writer.Write(bodyBuf.Bytes())
 }
 
@@ -77,10 +76,9 @@ func (server *Server) StartHttpServer() error {
 	return  http.ListenAndServe(server.port, server)
 }
 
-func NewHttpServer(port string, manager *addressmanager.Manager, dockerClient *container.DockerClient) *Server {
+func NewHttpServer(port string, manager *addressmanager.Manager) *Server {
 	return &Server{
 		port: port,
 		manager: manager,
-		dockerClient: dockerClient,
 	}
 }

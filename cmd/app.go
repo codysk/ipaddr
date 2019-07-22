@@ -5,9 +5,9 @@ import (
 	"github.com/spf13/cobra"
 	"ipprovider/pkg/addressmanager"
 	"ipprovider/pkg/arp"
-	"ipprovider/pkg/common"
 	"ipprovider/pkg/container"
 	"ipprovider/pkg/http"
+	"ipprovider/pkg/iptables"
 	"log"
 	"net"
 	"os"
@@ -22,11 +22,10 @@ var RootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("hello ip")
 		sigCh := make(chan os.Signal)
-		_interface, _ := getFirstBoardcastInterface()
+		_interface, _ := getFirstBroadcastInterface()
 		log.Println("interface: ", _interface.Name)
 
 		log.Println("init test data")
-		common.AssignedIPv4[common.InetToN(net.IP{192, 168, 153, 233})] = "test"
 		speaker, err := arp.NewArpSpeaker(_interface.Name)
 		if err != nil {
 			log.Print("get arp speaker failed.")
@@ -39,16 +38,28 @@ var RootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		manager := addressmanager.NewManager(speaker, dockerClient)
+
+		ipManager, err := iptables.NewManager(_interface)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		go func() {
 			speaker.ListenAndServe()
 			log.Println("speaker exited")
 			sigCh <- syscall.SIGTERM
 		}()
 
-		manager := addressmanager.NewManager(speaker)
 		go func() {
-			log.Print(http.NewHttpServer(":8088", manager, dockerClient).StartHttpServer())
+			log.Print(http.NewHttpServer(":8088", manager).StartHttpServer())
 			log.Println("http server exited")
+			sigCh <- syscall.SIGTERM
+		}()
+
+		go func() {
+			log.Print(ipManager.Serve())
+			log.Println("ipManager server exited")
 			sigCh <- syscall.SIGTERM
 		}()
 
@@ -58,11 +69,13 @@ var RootCmd = &cobra.Command{
 		log.Printf("signal: %v",<-sigCh)
 
 		// PreStop Action
+		ipManager.Stop()
 		_ = dockerClient.RemoveProviderNetwork()
+		ipManager.RemoveChains()
 	},
 }
 
-func getFirstBoardcastInterface() (*net.Interface, error) {
+func getFirstBroadcastInterface() (*net.Interface, error) {
 	_interfaces, err := net.Interfaces()
 	if err != nil {
 		return nil, err

@@ -6,6 +6,7 @@ import (
 	"ipprovider/pkg/common"
 	"log"
 	"net"
+	"regexp"
 	"time"
 )
 
@@ -100,6 +101,8 @@ func (manager *Manager) RemoveChains() {
 	}
 }
 
+var re, _ = regexp.Compile("-d (.*?)/32.*?--to-destination (.*?)$")
+
 func (manager *Manager) RulesMaintainer() error {
 	for externalIP, internalIP := range common.AssignedIPv4 {
 		eIP := net.IP{
@@ -126,6 +129,40 @@ func (manager *Manager) RulesMaintainer() error {
 		)
 		if err != nil {
 			log.Printf("maintainer return err: %v \n eip: %s iip: %s", err, eIP, iIP)
+		}
+
+		ruleList, err := manager.ipt.List(common.IPTablesNatTable, common.IPTablesNatTablePreRouteChain)
+		if err != nil {
+			log.Printf("rule collector return err: %v", err)
+		}
+
+		for _, rule := range ruleList {
+			match := re.FindStringSubmatch(rule)
+			if len(match) != 3 {
+				continue
+			}
+			// log.Printf("rule: %s; match: %v", rule, match)
+			externalIPStr := match[1]
+			internalIPStr := match[2]
+
+			externalIP := common.InetToN(net.ParseIP(externalIPStr).To4())
+			internalIP := common.InetToN(net.ParseIP(internalIPStr).To4())
+
+			if _, ok := common.AssignedIPv4[externalIP];!ok || common.AssignedIPv4[externalIP] != internalIP {
+				err := manager.ipt.Delete(
+					common.IPTablesNatTable,
+					common.IPTablesNatTablePreRouteChain,
+					"-d",
+					externalIPStr,
+					"-j",
+					"DNAT",
+					"--to-destination",
+					internalIPStr,
+				)
+				if err != nil {
+					log.Printf("delete rule return err: %v", err)
+				}
+			}
 		}
 
 	}

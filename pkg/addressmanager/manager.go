@@ -26,22 +26,32 @@ func (manager *Manager) AssignIPForContainer(_ip net.IP, containerId string) err
 		return errors.New("invalid ip format")
 	}
 
+	if _, ok := common.AssignedIPv4[common.InetToN(ip)]; ok {
+		return errors.New("error: this ip has been assigned")
+	}
+
 	err := manager.speaker.AssignIP(ip)
 	if err != nil {
 		return err
 	}
 
-	err = manager.dockerClient.ConnectProviderNetwork(containerId)
+	providerNetwork, err := manager.dockerClient.InspectProviderNetwork()
 	if err != nil {
 		return err
 	}
 
-	network, err := manager.dockerClient.InspectProviderNetwork()
-	if err != nil {
-		return err
+	if _, ok := providerNetwork.Containers[containerId]; !ok {
+		err = manager.dockerClient.ConnectProviderNetwork(containerId)
+		if err != nil {
+			return err
+		}
+		providerNetwork, err = manager.dockerClient.InspectProviderNetwork()
+		if err != nil {
+			return err
+		}
 	}
 
-	containerIP := network.Containers[containerId].IPv4Address
+	containerIP := providerNetwork.Containers[containerId].IPv4Address
 	containerIP = strings.Split(containerIP, "/")[0]
 
 	log.Printf("%v -> %s[%v]", _ip, containerId, containerIP)

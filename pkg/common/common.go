@@ -6,7 +6,15 @@ import (
 
 // var AssigningIPv4 = make(map[uint32]string)
 
-var AssignedIPv4 = make(map[uint32]uint32)
+type ContainerIPInfo struct {
+	InternalIP uint32
+	ExternalIP uint32
+	ContainerID string
+}
+
+
+var AssignedIPv4 = make(map[uint32]*ContainerIPInfo)
+var ConnectedContainer = make(map[string]*ContainerIPInfo)
 
 var Subnet = "10.50.0.0/16"
 var IPRange = "10.50.0.0/17"

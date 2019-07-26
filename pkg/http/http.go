@@ -24,6 +24,9 @@ func (server *Server) ServeHTTP(writer http.ResponseWriter, r *http.Request) {
 	case "/api/assignIPForContainer":
 		server.api_assignIPForContainer(writer, r)
 		break
+	case "/api/revokeAssigningIP":
+		server.api_revokeAssigningIP(writer, r)
+		break
 	default:
 		server.notFound(writer, r)
 	}
@@ -58,6 +61,32 @@ func (server *Server) api_assignIPForContainer(writer http.ResponseWriter, r *ht
 	// log.Printf("form ip is: %s", ipstr)
 	containerid := r.FormValue("container_id")
 	err = server.manager.AssignIPForContainer(ip, containerid)
+	if err != nil {
+		_, _ = writer.Write([]byte(err.Error()))
+		return
+	}
+	_, _ = writer.Write([]byte("done"))
+
+}
+
+func (server *Server) api_revokeAssigningIP(writer http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Println("parse req error")
+		log.Println(err)
+		return
+	}
+
+	form := map[string]string{
+		"ip": "",
+		"container_id": "",
+	}
+
+	for k, v := range r.Form {
+		form[k] = v[0]
+	}
+
+	err = server.manager.RevokeAssigning(form["ip"], form["container_id"])
 	if err != nil {
 		_, _ = writer.Write([]byte(err.Error()))
 		return

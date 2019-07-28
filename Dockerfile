@@ -9,6 +9,7 @@ LABEL maintainer="me@iskywind.com"
 RUN apk add --update iptables && rm -rf /vat/cache/apk/*
 
 COPY --from=build-env /app/src/ipprovider /app/
+COPY --from=build-env /app/src/public /app/public
 WORKDIR /app
 
 ENTRYPOINT ["./ipprovider"]

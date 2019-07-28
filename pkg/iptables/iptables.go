@@ -138,10 +138,10 @@ func (manager *Manager) RulesMaintainer() error {
 	}
 	for _, rule := range ruleList {
 		match := re.FindStringSubmatch(rule)
-		log.Printf("rule: %s; match: %v", rule, match)
 		if len(match) != 3 {
 			continue
 		}
+		// log.Printf("rule: %s; match: %v", rule, match)
 		externalIPStr := match[1]
 		internalIPStr := match[2]
 

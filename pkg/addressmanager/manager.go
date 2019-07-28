@@ -74,6 +74,13 @@ func (manager *Manager) AssignIPForContainer(_ip net.IP, containerId string) err
 		return errors.New("error: this ip has been assigned")
 	}
 
+	if _, ok := common.ConnectedContainer[containerId]; ok {
+		err := manager.revokeAssigningWithContainerID(containerId)
+		if err != nil {
+			return err
+		}
+	}
+
 	err := manager.speaker.AssignIP(ip)
 	if err != nil {
 		return err

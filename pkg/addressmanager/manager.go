@@ -20,6 +20,10 @@ func (manager *Manager) GetContainers() (*containers.Containers, error) {
 	return manager.dockerClient.GetContainerList()
 }
 
+func (manager *Manager) GetConnectedContainers() map[string]*common.ContainerIPInfo {
+	return common.ConnectedContainer
+}
+
 func (manager *Manager)RevokeAssigning(ipStr string, containerId string) error {
 	ip := net.ParseIP(ipStr).To4()
 	if ip != nil {

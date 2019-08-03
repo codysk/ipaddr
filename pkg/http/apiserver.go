@@ -21,6 +21,9 @@ func (server *ApiServer) ServeHTTP(writer http.ResponseWriter, r *http.Request) 
 	case "/api/getContainers":
 		server.api_getContainers(writer, r)
 		break
+	case "/api/getConnectedContainers":
+		server.api_getConnectedContainers(writer, r)
+		break
 	case "/api/assignIPForContainer":
 		server.api_assignIPForContainer(writer, r)
 		break
@@ -34,6 +37,20 @@ func (server *ApiServer) ServeHTTP(writer http.ResponseWriter, r *http.Request) 
 
 func (server *ApiServer) api_getContainers(writer http.ResponseWriter, _ *http.Request) {
 	containerList, _ := server.manager.GetContainers()
+
+	bodyBuf := new(bytes.Buffer)
+	err := json.NewEncoder(bodyBuf).Encode(containerList)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	writer.Header().Set("content-type", "application/json")
+	_, _ = writer.Write(bodyBuf.Bytes())
+}
+
+func (server *ApiServer) api_getConnectedContainers(writer http.ResponseWriter, _ *http.Request) {
+	containerList := server.manager.GetConnectedContainers()
 
 	bodyBuf := new(bytes.Buffer)
 	err := json.NewEncoder(bodyBuf).Encode(containerList)

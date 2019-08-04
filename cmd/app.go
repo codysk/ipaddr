@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"ipprovider/pkg/addressmanager"
 	"ipprovider/pkg/arp"
 	"ipprovider/pkg/container"
@@ -22,11 +23,19 @@ var RootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("hello ip")
 		sigCh := make(chan os.Signal)
-		_interface, _ := getFirstBroadcastInterface()
-		log.Println("interface: ", _interface.Name)
 
-		log.Println("init test data")
-		speaker, err := arp.NewArpSpeaker(_interface.Name)
+		viper.SetDefault("iface", "lo")
+		_ = viper.BindEnv("iface")
+		ifaceName := viper.GetString("iface")
+
+		if ifaceName == "lo" {
+			_interface, _ := getFirstBroadcastInterface()
+			ifaceName = _interface.Name
+		}
+
+		log.Println("interface: ", ifaceName)
+		
+		speaker, err := arp.NewArpSpeaker(ifaceName)
 		if err != nil {
 			log.Print("get arp speaker failed.")
 			log.Fatal(err)
@@ -40,7 +49,8 @@ var RootCmd = &cobra.Command{
 
 		manager := addressmanager.NewManager(speaker, dockerClient)
 
-		ipManager, err := iptables.NewManager(_interface)
+		iface, _ := net.InterfaceByName(ifaceName)
+		ipManager, err := iptables.NewManager(iface)
 		if err != nil {
 			log.Fatal(err)
 		}

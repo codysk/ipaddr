@@ -1,18 +1,51 @@
 # github.com/coreos/go-iptables v0.4.1
 github.com/coreos/go-iptables/iptables
+# github.com/fsnotify/fsnotify v1.4.7
+github.com/fsnotify/fsnotify
+# github.com/hashicorp/hcl v1.0.0
+github.com/hashicorp/hcl
+github.com/hashicorp/hcl/hcl/printer
+github.com/hashicorp/hcl/hcl/ast
+github.com/hashicorp/hcl/hcl/parser
+github.com/hashicorp/hcl/hcl/token
+github.com/hashicorp/hcl/json/parser
+github.com/hashicorp/hcl/hcl/scanner
+github.com/hashicorp/hcl/hcl/strconv
+github.com/hashicorp/hcl/json/scanner
+github.com/hashicorp/hcl/json/token
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/magiconair/properties v1.8.0
+github.com/magiconair/properties
 # github.com/mdlayher/arp v0.0.0-20190313224443-98a83c8a2717
 github.com/mdlayher/arp
 # github.com/mdlayher/ethernet v0.0.0-20190313224307-5b5fc417d966
 github.com/mdlayher/ethernet
 # github.com/mdlayher/raw v0.0.0-20190313224157-43dbcdd7739d
 github.com/mdlayher/raw
+# github.com/mitchellh/mapstructure v1.1.2
+github.com/mitchellh/mapstructure
+# github.com/pelletier/go-toml v1.2.0
+github.com/pelletier/go-toml
+# github.com/spf13/afero v1.1.2
+github.com/spf13/afero
+github.com/spf13/afero/mem
+# github.com/spf13/cast v1.3.0
+github.com/spf13/cast
 # github.com/spf13/cobra v0.0.5
 github.com/spf13/cobra
+# github.com/spf13/jwalterweatherman v1.0.0
+github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
+# github.com/spf13/viper v1.3.2
+github.com/spf13/viper
 # golang.org/x/net v0.0.0-20190313220215-9f648a60d977
 golang.org/x/net/bpf
 # golang.org/x/sys v0.0.0-20190312061237-fead79001313
 golang.org/x/sys/unix
+# golang.org/x/text v0.3.0
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2

@@ -48,7 +48,7 @@ func (manager *Manager) revokeAssigningWithIP(_ip net.IP) error {
 
 	externalIP := common.InetToN(ip)
 	containerId := common.AssignedIPv4[externalIP].ContainerID
-
+	_ = manager.dockerClient.DisconnectProviderNetwork(containerId)
 	delete(common.AssignedIPv4, externalIP)
 	delete(common.ConnectedContainer, containerId)
 
@@ -61,6 +61,7 @@ func (manager *Manager)revokeAssigningWithContainerID(containerId string) error 
 	}
 
 	externalIP := common.ConnectedContainer[containerId].ExternalIP
+	_ = manager.dockerClient.DisconnectProviderNetwork(containerId)
 
 	delete(common.AssignedIPv4, externalIP)
 	delete(common.ConnectedContainer, containerId)

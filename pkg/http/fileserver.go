@@ -1,8 +1,10 @@
 package http
 
-import "net/http"
+import (
+	"net/http"
+)
 
-type FileServer struct {
-	http.Handler
-
+func NewFileServer() http.Handler {
+	server := http.FileServer(http.Dir("/app/public"))
+	return server
 }
